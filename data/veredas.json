@@ -1,0 +1,108 @@
+{
+  "datasetVersion": "2026.11-sim.1",
+  "simulated": true,
+  "base": {
+    "id": "BASE-SIM-01",
+    "nombre": "Base Simulada Puesto de Salud Rural",
+    "lat": 5.131,
+    "lng": -74.16
+  },
+  "veredas": [
+    {
+      "id": "VS-01",
+      "nombre": "Vereda Simulada 01",
+      "provincia": "Rionegro",
+      "lat": 5.162,
+      "lng": -74.198,
+      "vulnerabilityIndex": 78
+    },
+    {
+      "id": "VS-02",
+      "nombre": "Vereda Simulada 02",
+      "provincia": "Rionegro",
+      "lat": 5.215,
+      "lng": -74.12,
+      "vulnerabilityIndex": 45
+    },
+    {
+      "id": "VS-03",
+      "nombre": "Vereda Simulada 03",
+      "provincia": "Rionegro",
+      "lat": 5.098,
+      "lng": -74.245,
+      "vulnerabilityIndex": 91
+    },
+    {
+      "id": "VS-04",
+      "nombre": "Vereda Simulada 04",
+      "provincia": "Gualivá",
+      "lat": 5.06,
+      "lng": -74.33,
+      "vulnerabilityIndex": 62
+    },
+    {
+      "id": "VS-05",
+      "nombre": "Vereda Simulada 05",
+      "provincia": "Gualivá",
+      "lat": 5.012,
+      "lng": -74.268,
+      "vulnerabilityIndex": 30
+    },
+    {
+      "id": "VS-06",
+      "nombre": "Vereda Simulada 06",
+      "provincia": "Rionegro",
+      "lat": 5.28,
+      "lng": -74.205,
+      "vulnerabilityIndex": 85
+    },
+    {
+      "id": "VS-07",
+      "nombre": "Vereda Simulada 07",
+      "provincia": "Sabana Centro",
+      "lat": 5.035,
+      "lng": -74.08,
+      "vulnerabilityIndex": 22
+    },
+    {
+      "id": "VS-08",
+      "nombre": "Vereda Simulada 08",
+      "provincia": "Ubaté",
+      "lat": 5.19,
+      "lng": -73.98,
+      "vulnerabilityIndex": 55
+    },
+    {
+      "id": "VS-09",
+      "nombre": "Vereda Simulada 09",
+      "provincia": "Rionegro",
+      "lat": 5.33,
+      "lng": -74.15,
+      "vulnerabilityIndex": 68
+    },
+    {
+      "id": "VS-10",
+      "nombre": "Vereda Simulada 10",
+      "provincia": "Gualivá",
+      "lat": 5.12,
+      "lng": -74.39,
+      "vulnerabilityIndex": 40
+    },
+    {
+      "id": "VS-11",
+      "nombre": "Vereda Simulada 11",
+      "provincia": "Sabana Centro",
+      "lat": 5.075,
+      "lng": -74.01,
+      "vulnerabilityIndex": 73
+    },
+    {
+      "id": "VS-12",
+      "nombre": "Vereda Simulada 12",
+      "provincia": "Rionegro",
+      "lat": 5.245,
+      "lng": -74.3,
+      "vulnerabilityIndex": 15
+    }
+  ]
+}

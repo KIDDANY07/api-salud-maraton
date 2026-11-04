@@ -1,0 +1,119 @@
+@baseUrl = http://localhost:3000/api/v1
+@tokenUrl = http://localhost:8080/realms/rural-health/protocol/openid-connect/token
+@plannerToken = PEGAR_ACCESS_TOKEN_DE_PLANIFICADOR_APP
+@auditorToken = PEGAR_ACCESS_TOKEN_DE_AUDITOR_APP
+@routeId = PEGAR_ROUTE_ID_GENERADO
+
+###
+
+POST {{tokenUrl}}
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=client_credentials&client_id=planificador-app&client_secret=planificador-demo-secret
+
+###
+
+POST {{tokenUrl}}
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=client_credentials&client_id=auditor-app&client_secret=auditor-demo-secret
+
+###
+
+GET {{baseUrl}}/health
+
+###
+
+GET {{baseUrl}}/veredas
+Authorization: Bearer {{plannerToken}}
+
+###
+
+POST {{baseUrl}}/routes
+Authorization: Bearer {{plannerToken}}
+Content-Type: application/json
+X-Correlation-Id: demo-jornada-0001
+
+{}
+
+###
+
+POST {{baseUrl}}/routes
+Authorization: Bearer {{plannerToken}}
+Content-Type: application/json
+
+{
+  "strategy": "VULNERABILITY_WEIGHTED",
+  "visitCount": 5,
+  "alpha": 0.7,
+  "returnToBase": true,
+  "excludedVeredaIds": ["VS-04"]
+}
+
+###
+
+POST {{baseUrl}}/routes
+Authorization: Bearer {{plannerToken}}
+Content-Type: application/json
+
+{
+  "strategy": "NEAREST_NEIGHBOR",
+  "visitCount": 4,
+  "returnToBase": false
+}
+
+###
+
+POST {{baseUrl}}/routes
+Authorization: Bearer {{plannerToken}}
+Content-Type: application/json
+
+{
+  "visitCount": 20,
+  "alpha": 1.5
+}
+
+###
+
+POST {{baseUrl}}/routes
+Authorization: Bearer {{auditorToken}}
+Content-Type: application/json
+
+{}
+
+###
+
+POST {{baseUrl}}/routes
+Content-Type: application/json
+
+{}
+
+###
+
+GET {{baseUrl}}/routes/{{routeId}}
+Authorization: Bearer {{plannerToken}}
+
+###
+
+GET {{baseUrl}}/audit/routes?page=1&limit=10
+Authorization: Bearer {{auditorToken}}
+
+###
+
+GET {{baseUrl}}/audit/routes?status=FORBIDDEN&actor=auditor-app&from=2026-01-01T00:00:00Z&to=2030-12-31T23:59:59Z
+Authorization: Bearer {{auditorToken}}
+
+###
+
+GET {{baseUrl}}/audit/routes/{{routeId}}
+Authorization: Bearer {{auditorToken}}
+
+###
+
+POST {{baseUrl}}/audit/routes/{{routeId}}/verify
+Authorization: Bearer {{auditorToken}}
+
+###
+
+GET {{baseUrl}}/audit/routes
+Authorization: Bearer {{plannerToken}}

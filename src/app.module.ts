@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common'
+import { Module, RequestMethod } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { APP_FILTER, APP_GUARD } from '@nestjs/core'
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler'
@@ -9,7 +9,12 @@ import { stdTimeFunctions } from 'pino'
 import { validateEnvironment, type LogLevel } from './app.config'
 import { AuditModule } from './audit/audit.module'
 import { AuthModule } from './auth/auth.module'
+import {
+  CREDENTIAL_THROTTLER,
+  isCredentialEndpoint,
+} from './auth/decorators/credential-endpoint.decorator'
 import { JwtAuthGuard } from './auth/guard/jwt-guard'
+import { RolesGuard } from './auth/guard/roles.guard'
 import { ScopesGuard } from './auth/guard/scopes.guard'
 import { HttpExceptionFilter } from './common/filters/http-exception.filter'
 import {
@@ -19,6 +24,7 @@ import {
 import { HealthModule } from './health/health.module'
 import { RouteEngineModule } from './route_engine/route-engine.module'
 import { RoutesModule } from './routes/routes.module'
+import { UsersModule } from './users/users.module'
 import { VeredasModule } from './veredas/veredas.module'
 
 interface SerializedRequest {
@@ -64,6 +70,7 @@ function logLevelFor(
     LoggerModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
+        forRoutes: [{ path: '{*splat}', method: RequestMethod.ALL }],
         pinoHttp: {
           level: config.getOrThrow<LogLevel>('LOG_LEVEL'),
           messageKey: 'message',
@@ -103,8 +110,15 @@ function logLevelFor(
       inject: [ConfigService],
       useFactory: (config: ConfigService) => [
         {
+          name: 'default',
           ttl: config.getOrThrow<number>('RATE_LIMIT_TTL_MS'),
           limit: config.getOrThrow<number>('RATE_LIMIT_MAX'),
+        },
+        {
+          name: CREDENTIAL_THROTTLER,
+          ttl: config.getOrThrow<number>('RATE_LIMIT_TTL_MS'),
+          limit: config.getOrThrow<number>('LOGIN_RATE_LIMIT_MAX'),
+          skipIf: (context) => !isCredentialEndpoint(context),
         },
       ],
     }),
@@ -124,12 +138,14 @@ function logLevelFor(
     RouteEngineModule,
     AuditModule,
     RoutesModule,
+    UsersModule,
     HealthModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useExisting: JwtAuthGuard },
     { provide: APP_GUARD, useExisting: ScopesGuard },
+    { provide: APP_GUARD, useExisting: RolesGuard },
     { provide: APP_FILTER, useClass: HttpExceptionFilter },
   ],
 })

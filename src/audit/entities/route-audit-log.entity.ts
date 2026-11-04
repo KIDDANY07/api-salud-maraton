@@ -41,6 +41,17 @@ export class RouteAuditLog {
   })
   actorClientId!: string | null
 
+  @Column({
+    name: 'actor_username',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  actorUsername!: string | null
+
+  @Column({ name: 'actor_roles', type: 'text', array: true, nullable: true })
+  actorRoles!: string[] | null
+
   @Column({ type: 'text', array: true })
   scopes!: string[]
 

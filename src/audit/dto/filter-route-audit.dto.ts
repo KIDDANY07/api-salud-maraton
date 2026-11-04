@@ -27,7 +27,7 @@ export class FilterRouteAuditDto extends PageQueryDto {
   to?: string
 
   @ApiPropertyOptional({
-    description: 'Filtra por sub o client_id del actor',
+    description: 'Filtra por sub, client_id o username del actor',
     example: 'planificador-app',
   })
   @IsOptional()

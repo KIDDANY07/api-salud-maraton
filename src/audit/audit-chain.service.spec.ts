@@ -20,6 +20,8 @@ function draft(
     correlationId: `corr-${index}-abcdef`,
     actorSub: `sub-${index}`,
     actorClientId: 'planificador-app',
+    actorUsername: `coordinador-${index}`,
+    actorRoles: ['COORDINADOR'],
     scopes: ['routes:read', 'routes:write'],
     status: AuditStatus.SUCCESS,
     routeId: `10000000-0000-4000-8000-00000000000${index}`,
@@ -50,6 +52,29 @@ function buildChain(length: number): ChainRecord[] {
 }
 
 describe('AuditChainService', () => {
+  it('incluye usuario y roles del actor en el hash de los registros nuevos', () => {
+    const record = draft(1, GENESIS_HASH)
+    const original = chain.computeRecordHash(record)
+    expect(
+      chain.computeRecordHash({ ...record, actorRoles: ['AUDITOR'] }),
+    ).not.toBe(original)
+    expect(
+      chain.computeRecordHash({ ...record, actorUsername: 'otra-persona' }),
+    ).not.toBe(original)
+  })
+
+  it('mantiene el hash de los registros anteriores a los roles', () => {
+    const legacy = draft(1, GENESIS_HASH, {
+      actorUsername: null,
+      actorRoles: null,
+    })
+    const hash = chain.computeRecordHash(legacy)
+    expect(
+      chain.computeRecordHash({ ...legacy, actorUsername: 'ignorado' }),
+    ).toBe(hash)
+    expect(hash).not.toBe(chain.computeRecordHash(draft(1, GENESIS_HASH)))
+  })
+
   it('usa un hash génesis de 64 ceros', () => {
     expect(GENESIS_HASH).toMatch(/^0{64}$/)
   })

@@ -79,6 +79,8 @@ export class AuditWriterService implements FailedAttemptRecorder {
       correlationId: entry.correlationId,
       actorSub: entry.actor?.sub ?? null,
       actorClientId: entry.actor?.clientId ?? null,
+      actorUsername: entry.actor?.username ?? null,
+      actorRoles: [...(entry.actor?.roles ?? [])],
       scopes: [...(entry.actor?.scopes ?? [])],
       status: entry.status,
       routeId: entry.routeId,

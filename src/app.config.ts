@@ -17,6 +17,7 @@ export type LogLevel = (typeof LOG_LEVELS)[number]
 
 export interface AppEnvironment {
   NODE_ENV: string
+  HOST: string
   PORT: number
   URL_DB: string
   ROAD_FACTOR: number
@@ -39,6 +40,7 @@ export interface AppEnvironment {
   SELF_REGISTRATION_ENABLED: boolean
   LOG_LEVEL: LogLevel
   SWAGGER_ENABLED: boolean
+  TRUST_PROXY: number | boolean
 }
 
 type RawEnvironment = Record<string, unknown>
@@ -98,6 +100,23 @@ function readUrl(
   return value
 }
 
+function readTrustProxy(
+  env: RawEnvironment,
+  errors: string[],
+): number | boolean {
+  const raw = readString(env, 'TRUST_PROXY', errors, 'false').toLowerCase()
+  if (raw === 'true' || raw === 'false') {
+    return raw === 'true'
+  }
+  const hops = Number(raw)
+  if (!Number.isInteger(hops) || hops < 0 || hops > 10) {
+    errors.push(
+      'TRUST_PROXY debe ser true, false o un número de saltos entre 0 y 10',
+    )
+  }
+  return hops
+}
+
 function originOf(url: string): string | undefined {
   return URL.canParse(url) ? new URL(url).origin : undefined
 }
@@ -123,6 +142,7 @@ export function validateEnvironment(env: RawEnvironment): AppEnvironment {
     .filter((origin) => origin.length > 0)
   const config: AppEnvironment = {
     NODE_ENV: readString(env, 'NODE_ENV', errors, 'development'),
+    HOST: readString(env, 'HOST', errors, '0.0.0.0'),
     PORT: readNumber(env, 'PORT', errors, 3000, {
       min: 1,
       max: 65535,
@@ -146,7 +166,12 @@ export function validateEnvironment(env: RawEnvironment): AppEnvironment {
       errors,
       'rural-routes-api',
     ),
-    OAUTH_JWKS_URI: readUrl(env, 'OAUTH_JWKS_URI', errors),
+    OAUTH_JWKS_URI: readUrl(
+      env,
+      'OAUTH_JWKS_URI',
+      errors,
+      `${issuer}/protocol/openid-connect/certs`,
+    ),
     OAUTH_TOKEN_URL: readUrl(
       env,
       'OAUTH_TOKEN_URL',
@@ -213,6 +238,7 @@ export function validateEnvironment(env: RawEnvironment): AppEnvironment {
         errors,
         'true',
       ).toLowerCase() !== 'false',
+    TRUST_PROXY: readTrustProxy(env, errors),
     SWAGGER_ENABLED:
       readString(env, 'SWAGGER_ENABLED', errors, 'true').toLowerCase() !==
       'false',

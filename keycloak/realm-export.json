@@ -247,7 +247,7 @@
       "publicClient": false,
       "bearerOnly": false,
       "clientAuthenticatorType": "client-secret",
-      "secret": "planificador-demo-secret",
+      "secret": "${PLANIFICADOR_CLIENT_SECRET:planificador-demo-secret}",
       "standardFlowEnabled": false,
       "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": false,
@@ -255,7 +255,7 @@
       "fullScopeAllowed": false,
       "frontchannelLogout": false,
       "webOrigins": [
-        "http://localhost:3000"
+        "${API_PUBLIC_URL:http://localhost:3000}"
       ],
       "redirectUris": [],
       "attributes": {
@@ -294,7 +294,7 @@
       "publicClient": false,
       "bearerOnly": false,
       "clientAuthenticatorType": "client-secret",
-      "secret": "auditor-demo-secret",
+      "secret": "${AUDITOR_CLIENT_SECRET:auditor-demo-secret}",
       "standardFlowEnabled": false,
       "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": false,
@@ -302,7 +302,7 @@
       "fullScopeAllowed": false,
       "frontchannelLogout": false,
       "webOrigins": [
-        "http://localhost:3000"
+        "${API_PUBLIC_URL:http://localhost:3000}"
       ],
       "redirectUris": [],
       "attributes": {
@@ -346,20 +346,18 @@
       "serviceAccountsEnabled": false,
       "fullScopeAllowed": false,
       "frontchannelLogout": true,
-      "rootUrl": "http://localhost:3000",
+      "rootUrl": "${API_PUBLIC_URL:http://localhost:3000}",
       "redirectUris": [
-        "http://localhost:3000/docs/oauth2-redirect.html",
-        "http://localhost:5173/*",
-        "http://localhost:4200/*"
+        "${API_PUBLIC_URL:http://localhost:3000}/docs/oauth2-redirect.html",
+        "${FRONTEND_URL:http://localhost:5173}/*"
       ],
       "webOrigins": [
-        "http://localhost:3000",
-        "http://localhost:5173",
-        "http://localhost:4200"
+        "${API_PUBLIC_URL:http://localhost:3000}",
+        "${FRONTEND_URL:http://localhost:5173}"
       ],
       "attributes": {
         "pkce.code.challenge.method": "S256",
-        "post.logout.redirect.uris": "http://localhost:5173/*##http://localhost:4200/*##http://localhost:3000/*"
+        "post.logout.redirect.uris": "${FRONTEND_URL:http://localhost:5173}/*##${API_PUBLIC_URL:http://localhost:3000}/*"
       },
       "defaultClientScopes": [
         "rural-api",
@@ -380,7 +378,7 @@
       "publicClient": false,
       "bearerOnly": false,
       "clientAuthenticatorType": "client-secret",
-      "secret": "admin-api-demo-secret",
+      "secret": "${KEYCLOAK_ADMIN_CLIENT_SECRET:admin-api-demo-secret}",
       "standardFlowEnabled": false,
       "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": false,
@@ -399,8 +397,27 @@
   ],
   "users": [
     {
-      "username": "admin.demo",
+      "username": "kiddany07",
       "enabled": true,
+      "emailVerified": true,
+      "email": "danielmoralesteatino2004@gmail.com",
+      "firstName": "Daniel",
+      "lastName": "Morales",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${INITIAL_ADMIN_PASSWORD:DanyCTM777}",
+          "temporary": false
+        }
+      ],
+      "requiredActions": [],
+      "realmRoles": [
+        "ADMIN"
+      ]
+    },
+    {
+      "username": "admin.demo",
+      "enabled": "${DEMO_USERS_ENABLED:true}",
       "emailVerified": true,
       "email": "admin.demo@rural-health.test",
       "firstName": "Administradora",
@@ -419,7 +436,7 @@
     },
     {
       "username": "coordinador.demo",
-      "enabled": true,
+      "enabled": "${DEMO_USERS_ENABLED:true}",
       "emailVerified": true,
       "email": "coordinador.demo@rural-health.test",
       "firstName": "Coordinadora",
@@ -438,7 +455,7 @@
     },
     {
       "username": "coordinador2.demo",
-      "enabled": true,
+      "enabled": "${DEMO_USERS_ENABLED:true}",
       "emailVerified": true,
       "email": "coordinador2.demo@rural-health.test",
       "firstName": "Coordinador",
@@ -457,7 +474,7 @@
     },
     {
       "username": "auditor.demo",
-      "enabled": true,
+      "enabled": "${DEMO_USERS_ENABLED:true}",
       "emailVerified": true,
       "email": "auditor.demo@rural-health.test",
       "firstName": "Auditor",
@@ -476,7 +493,7 @@
     },
     {
       "username": "equipo.demo",
-      "enabled": true,
+      "enabled": "${DEMO_USERS_ENABLED:true}",
       "emailVerified": true,
       "email": "equipo.demo@rural-health.test",
       "firstName": "Equipo",

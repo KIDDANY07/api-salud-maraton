@@ -89,6 +89,7 @@ export function configureApp(app: NestExpressApplication): void {
   const corsOrigins = config.getOrThrow<string[]>('CORS_ORIGINS')
   app.useLogger(app.get(Logger))
   app.disable('x-powered-by')
+  app.set('trust proxy', config.getOrThrow<number | boolean>('TRUST_PROXY'))
   app.setGlobalPrefix(API_PREFIX)
   app.use(
     helmet({

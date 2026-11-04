@@ -118,7 +118,7 @@ export class AuditService {
     }
     if (filter.actor) {
       query.andWhere(
-        '(audit.actorSub = :actor OR audit.actorClientId = :actor)',
+        '(audit.actorSub = :actor OR audit.actorClientId = :actor OR audit.actorUsername = :actor)',
         { actor: filter.actor },
       )
     }
@@ -243,7 +243,12 @@ export class AuditService {
       sequence: Number(record.sequence),
       timestamp: record.occurredAt.toISOString(),
       correlationId: record.correlationId,
-      actor: { sub: record.actorSub, clientId: record.actorClientId },
+      actor: {
+        sub: record.actorSub,
+        clientId: record.actorClientId,
+        username: record.actorUsername,
+        roles: record.actorRoles ?? [],
+      },
       scopes: record.scopes,
       status: record.status,
       routeId: record.routeId,

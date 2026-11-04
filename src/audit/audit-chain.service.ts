@@ -20,8 +20,21 @@ export interface RecordIntegrity {
   previousHashValid: boolean
 }
 
+function actorIdentityFields(
+  record: HashableAuditRecord,
+): Record<string, unknown> {
+  if (record.actorRoles === null || record.actorRoles === undefined) {
+    return {}
+  }
+  return {
+    actorUsername: record.actorUsername ?? null,
+    actorRoles: [...record.actorRoles],
+  }
+}
+
 function toHashPayload(record: HashableAuditRecord): Record<string, unknown> {
   return {
+    ...actorIdentityFields(record),
     id: record.id,
     occurredAt: new Date(record.occurredAt).toISOString(),
     correlationId: record.correlationId,

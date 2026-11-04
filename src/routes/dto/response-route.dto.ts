@@ -1,7 +1,44 @@
 import { ApiProperty } from '@nestjs/swagger'
+import { AppRole } from '../../auth/authenticated-user'
+import { PageMetaDto } from '../../common/dto/pagination.dto'
 import { PriorityBand } from '../../common/utils/priority-band.util'
 import { RouteStrategyName } from '../../route_engine/strategies/route-strategy.interface'
 import { BasePlaceDto } from '../../veredas/dto/response-vereda.dto'
+import {
+  ReviewDecision,
+  RouteReviewStatus,
+} from '../entities/route-review.entity'
+
+export class RouteActorDto {
+  @ApiProperty({ nullable: true, type: String })
+  sub!: string | null
+
+  @ApiProperty({ nullable: true, type: String, example: 'coordinador.demo' })
+  username!: string | null
+
+  @ApiProperty({ nullable: true, type: String, example: 'rural-routes-web' })
+  clientId!: string | null
+
+  @ApiProperty({ enum: AppRole, isArray: true })
+  roles!: string[]
+}
+
+export class RouteReviewDto {
+  @ApiProperty({ enum: RouteReviewStatus })
+  status!: RouteReviewStatus
+
+  @ApiProperty({ enum: ReviewDecision, nullable: true })
+  decision!: ReviewDecision | null
+
+  @ApiProperty({ nullable: true, type: String })
+  observations!: string | null
+
+  @ApiProperty({ type: RouteActorDto, nullable: true })
+  reviewedBy!: RouteActorDto | null
+
+  @ApiProperty({ nullable: true, type: String, format: 'date-time' })
+  reviewedAt!: string | null
+}
 
 export class AppliedParametersDto {
   @ApiProperty({ enum: RouteStrategyName })
@@ -166,9 +203,56 @@ export class RouteResponseDto {
   @ApiProperty({ type: StrategyComparisonDto })
   comparison!: StrategyComparisonDto
 
+  @ApiProperty({ type: RouteActorDto })
+  createdBy!: RouteActorDto
+
+  @ApiProperty({
+    type: RouteReviewDto,
+    description:
+      'Estado de la validación humana. Una ruta PENDIENTE_REVISION aún no debe programarse.',
+  })
+  review!: RouteReviewDto
+
   @ApiProperty({
     description:
       'Advertencia: sugerencia basada en datos simulados que requiere validación humana',
   })
   disclaimer!: string
+}
+
+export class RouteSummaryDto {
+  @ApiProperty({ format: 'uuid' })
+  routeId!: string
+
+  @ApiProperty({ format: 'date-time' })
+  generatedAt!: string
+
+  @ApiProperty({ enum: RouteStrategyName })
+  strategy!: RouteStrategyName
+
+  @ApiProperty({ example: 5 })
+  visitCount!: number
+
+  @ApiProperty({ type: [String], example: ['VS-03', 'VS-01'] })
+  veredaIds!: string[]
+
+  @ApiProperty({ example: 83.018 })
+  totalDistanceKm!: number
+
+  @ApiProperty({ example: '2026.11-sim.1' })
+  datasetVersion!: string
+
+  @ApiProperty({ type: RouteActorDto })
+  createdBy!: RouteActorDto
+
+  @ApiProperty({ enum: RouteReviewStatus })
+  reviewStatus!: RouteReviewStatus
+}
+
+export class PaginatedRoutesDto {
+  @ApiProperty({ type: [RouteSummaryDto] })
+  items!: RouteSummaryDto[]
+
+  @ApiProperty({ type: PageMetaDto })
+  meta!: PageMetaDto
 }

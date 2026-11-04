@@ -1,8 +1,132 @@
 @baseUrl = http://localhost:3000/api/v1
 @tokenUrl = http://localhost:8080/realms/rural-health/protocol/openid-connect/token
-@plannerToken = PEGAR_ACCESS_TOKEN_DE_PLANIFICADOR_APP
-@auditorToken = PEGAR_ACCESS_TOKEN_DE_AUDITOR_APP
+@adminToken = PEGAR_ACCESS_TOKEN_DE_ADMIN_DEMO
+@coordinatorToken = PEGAR_ACCESS_TOKEN_DE_COORDINADOR_DEMO
+@auditorToken = PEGAR_ACCESS_TOKEN_DE_AUDITOR_DEMO
+@teamToken = PEGAR_ACCESS_TOKEN_DE_EQUIPO_DEMO
+@refreshToken = PEGAR_REFRESH_TOKEN
 @routeId = PEGAR_ROUTE_ID_GENERADO
+@userId = PEGAR_ID_DE_USUARIO
+
+###
+
+GET {{baseUrl}}/health
+
+###
+
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "promotora.guaduas",
+  "email": "promotora.guaduas@rural-health.test",
+  "firstName": "Marta",
+  "lastName": "Guzmán",
+  "password": "Promueve.Salud2026"
+}
+
+###
+
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "promotora.guaduas",
+  "password": "Promueve.Salud2026"
+}
+
+###
+
+GET {{baseUrl}}/users?pendingApproval=true
+Authorization: Bearer {{adminToken}}
+
+###
+
+PUT {{baseUrl}}/users/{{userId}}/role
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "role": "EQUIPO_SALUD"
+}
+
+###
+
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin.demo",
+  "password": "Gestion.Usuarios2026"
+}
+
+###
+
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "coordinador.demo",
+  "password": "Planifica.Rutas2026"
+}
+
+###
+
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "auditor.demo",
+  "password": "Revisa.Trazas2026"
+}
+
+###
+
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "equipo.demo",
+  "password": "Valida.Campo2026"
+}
+
+###
+
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "coordinador.demo",
+  "password": "clave-incorrecta"
+}
+
+###
+
+POST {{baseUrl}}/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+###
+
+POST {{baseUrl}}/auth/logout
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+###
+
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{coordinatorToken}}
+
+###
+
+GET {{baseUrl}}/auth/roles
+Authorization: Bearer {{coordinatorToken}}
 
 ###
 
@@ -20,17 +144,13 @@ grant_type=client_credentials&client_id=auditor-app&client_secret=auditor-demo-s
 
 ###
 
-GET {{baseUrl}}/health
-
-###
-
 GET {{baseUrl}}/veredas
-Authorization: Bearer {{plannerToken}}
+Authorization: Bearer {{teamToken}}
 
 ###
 
 POST {{baseUrl}}/routes
-Authorization: Bearer {{plannerToken}}
+Authorization: Bearer {{coordinatorToken}}
 Content-Type: application/json
 X-Correlation-Id: demo-jornada-0001
 
@@ -39,7 +159,7 @@ X-Correlation-Id: demo-jornada-0001
 ###
 
 POST {{baseUrl}}/routes
-Authorization: Bearer {{plannerToken}}
+Authorization: Bearer {{coordinatorToken}}
 Content-Type: application/json
 
 {
@@ -53,7 +173,7 @@ Content-Type: application/json
 ###
 
 POST {{baseUrl}}/routes
-Authorization: Bearer {{plannerToken}}
+Authorization: Bearer {{coordinatorToken}}
 Content-Type: application/json
 
 {
@@ -65,7 +185,7 @@ Content-Type: application/json
 ###
 
 POST {{baseUrl}}/routes
-Authorization: Bearer {{plannerToken}}
+Authorization: Bearer {{coordinatorToken}}
 Content-Type: application/json
 
 {
@@ -76,7 +196,7 @@ Content-Type: application/json
 ###
 
 POST {{baseUrl}}/routes
-Authorization: Bearer {{auditorToken}}
+Authorization: Bearer {{teamToken}}
 Content-Type: application/json
 
 {}
@@ -90,8 +210,44 @@ Content-Type: application/json
 
 ###
 
+GET {{baseUrl}}/routes?reviewStatus=PENDIENTE_REVISION&page=1&limit=10
+Authorization: Bearer {{teamToken}}
+
+###
+
 GET {{baseUrl}}/routes/{{routeId}}
-Authorization: Bearer {{plannerToken}}
+Authorization: Bearer {{teamToken}}
+
+###
+
+POST {{baseUrl}}/routes/{{routeId}}/review
+Authorization: Bearer {{teamToken}}
+Content-Type: application/json
+
+{
+  "decision": "APROBADA",
+  "observations": "Vías transitables según el reporte del día."
+}
+
+###
+
+POST {{baseUrl}}/routes/{{routeId}}/review
+Authorization: Bearer {{teamToken}}
+Content-Type: application/json
+
+{
+  "decision": "RECHAZADA"
+}
+
+###
+
+POST {{baseUrl}}/routes/{{routeId}}/review
+Authorization: Bearer {{coordinatorToken}}
+Content-Type: application/json
+
+{
+  "decision": "APROBADA"
+}
 
 ###
 
@@ -100,7 +256,7 @@ Authorization: Bearer {{auditorToken}}
 
 ###
 
-GET {{baseUrl}}/audit/routes?status=FORBIDDEN&actor=auditor-app&from=2026-01-01T00:00:00Z&to=2030-12-31T23:59:59Z
+GET {{baseUrl}}/audit/routes?status=FORBIDDEN&actor=equipo.demo&from=2026-01-01T00:00:00Z&to=2030-12-31T23:59:59Z
 Authorization: Bearer {{auditorToken}}
 
 ###
@@ -116,4 +272,75 @@ Authorization: Bearer {{auditorToken}}
 ###
 
 GET {{baseUrl}}/audit/routes
-Authorization: Bearer {{plannerToken}}
+Authorization: Bearer {{coordinatorToken}}
+
+###
+
+GET {{baseUrl}}/users?role=EQUIPO_SALUD&page=1&limit=20
+Authorization: Bearer {{adminToken}}
+
+###
+
+POST {{baseUrl}}/users
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "username": "enfermera.zipaquira",
+  "email": "enfermera.zipaquira@rural-health.test",
+  "firstName": "Laura",
+  "lastName": "Rincón",
+  "role": "EQUIPO_SALUD",
+  "password": "Visita.Rural2026"
+}
+
+###
+
+GET {{baseUrl}}/users/{{userId}}
+Authorization: Bearer {{adminToken}}
+
+###
+
+PATCH {{baseUrl}}/users/{{userId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "enabled": false
+}
+
+###
+
+PUT {{baseUrl}}/users/{{userId}}/role
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "role": "AUDITOR"
+}
+
+###
+
+PUT {{baseUrl}}/users/{{userId}}/password
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "password": "Nueva.Clave2026"
+}
+
+###
+
+PUT {{baseUrl}}/users/me/password
+Authorization: Bearer {{teamToken}}
+Content-Type: application/json
+
+{
+  "currentPassword": "Valida.Campo2026",
+  "newPassword": "Campo.Seguro2026"
+}
+
+###
+
+GET {{baseUrl}}/users
+Authorization: Bearer {{coordinatorToken}}

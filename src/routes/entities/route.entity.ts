@@ -1,4 +1,5 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm'
+import type { RouteReview } from './route-review.entity'
 import type {
   AppliedRouteParameters,
   RoutePlan,
@@ -60,4 +61,17 @@ export class Route {
     nullable: true,
   })
   createdByClientId!: string | null
+
+  @Column({
+    name: 'created_by_username',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  createdByUsername!: string | null
+
+  @Column({ name: 'created_by_roles', type: 'text', array: true })
+  createdByRoles!: string[]
+
+  review?: RouteReview | null
 }

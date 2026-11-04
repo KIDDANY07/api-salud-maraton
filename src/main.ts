@@ -11,8 +11,9 @@ async function bootstrap(): Promise<void> {
     abortOnError: false,
   })
   configureApp(app)
-  const port = app.get(ConfigService).getOrThrow<number>('PORT')
-  await app.listen(port, '0.0.0.0')
+  const config = app.get(ConfigService)
+  const port = config.getOrThrow<number>('PORT')
+  await app.listen(port, config.getOrThrow<string>('HOST'))
   app.get(Logger).log(`API escuchando en el puerto ${port}`, 'Bootstrap')
 }
 

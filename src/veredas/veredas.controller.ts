@@ -8,7 +8,8 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger'
-import { ApiScope } from '../auth/authenticated-user'
+import { APP_ROLES, ApiScope } from '../auth/authenticated-user'
+import { Roles } from '../auth/decorators/roles.decorator'
 import { Scopes } from '../auth/decorators/scopes.decorator'
 import { VeredasCatalogResponseDto } from './dto/response-vereda.dto'
 import { VeredasService } from './veredas.service'
@@ -17,13 +18,16 @@ import { VeredasService } from './veredas.service'
 @ApiBearerAuth('bearer')
 @ApiOAuth2([ApiScope.ROUTES_READ], 'oauth2')
 @ApiUnauthorizedResponse({ description: 'Token ausente o inválido' })
-@ApiForbiddenResponse({ description: 'El token no tiene el scope routes:read' })
+@ApiForbiddenResponse({
+  description: 'Requiere el scope routes:read y un rol funcional',
+})
 @Controller('veredas')
 export class VeredasController {
   constructor(private readonly veredasService: VeredasService) {}
 
   @Get()
   @Scopes(ApiScope.ROUTES_READ)
+  @Roles(...APP_ROLES)
   @ApiOperation({
     summary: 'Catálogo de veredas simuladas',
     description:

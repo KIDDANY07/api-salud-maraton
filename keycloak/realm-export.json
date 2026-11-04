@@ -4,9 +4,147 @@
   "enabled": true,
   "sslRequired": "external",
   "accessTokenLifespan": 300,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "revokeRefreshToken": true,
+  "refreshTokenMaxReuse": 0,
   "registrationAllowed": false,
-  "loginWithEmailAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": false,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "permanentLockout": false,
+  "failureFactor": 5,
+  "waitIncrementSeconds": 60,
+  "maxFailureWaitSeconds": 900,
+  "maxDeltaTimeSeconds": 43200,
+  "passwordPolicy": "length(10) and maxLength(128) and upperCase(1) and lowerCase(1) and digits(1) and notUsername(undefined)",
+  "roles": {
+    "realm": [
+      {
+        "name": "ADMIN",
+        "description": "Gestiona cuentas y roles; consulta rutas y veredas",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "COORDINADOR",
+        "description": "Genera rutas sugeridas y consulta rutas y veredas",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "AUDITOR",
+        "description": "Consulta la auditoría, el desglose del score y verifica rutas",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "EQUIPO_SALUD",
+        "description": "Valida las rutas sugeridas (aprobar o rechazar) y consulta rutas y veredas",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "PENDIENTE_APROBACION",
+        "description": "Cuenta registrada por /auth/register que espera la aprobación de un administrador; no otorga funciones",
+        "composite": false,
+        "clientRole": false
+      }
+    ]
+  },
   "clientScopes": [
+    {
+      "name": "rural-api",
+      "description": "Audiencia de la API, identidad y roles funcionales del usuario",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "false",
+        "display.on.consent.screen": "false"
+      },
+      "protocolMappers": [
+        {
+          "name": "audience-rural-routes-api",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.custom.audience": "rural-routes-api",
+            "access.token.claim": "true",
+            "id.token.claim": "false",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "subject",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-sub-mapper",
+          "consentRequired": false,
+          "config": {
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "username",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "introspection.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "user.attribute": "username",
+            "claim.name": "preferred_username",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "email",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "introspection.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "user.attribute": "email",
+            "claim.name": "email",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "full-name",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-full-name-mapper",
+          "consentRequired": false,
+          "config": {
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "introspection.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        },
+        {
+          "name": "realm-roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "introspection.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "claim.name": "realm_access.roles",
+            "jsonType.label": "String",
+            "multivalued": "true"
+          }
+        }
+      ]
+    },
     {
       "name": "routes:read",
       "description": "Consultar rutas sugeridas y el catálogo de veredas",
@@ -26,8 +164,26 @@
       }
     },
     {
+      "name": "routes:review",
+      "description": "Registrar la validación humana de una ruta",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false"
+      }
+    },
+    {
       "name": "audit:read",
       "description": "Consultar la auditoría y el desglose del cálculo",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false"
+      }
+    },
+    {
+      "name": "users:manage",
+      "description": "Gestionar usuarios y roles",
       "protocol": "openid-connect",
       "attributes": {
         "include.in.token.scope": "true",
@@ -37,17 +193,61 @@
   ],
   "defaultDefaultClientScopes": [],
   "defaultOptionalClientScopes": [],
+  "scopeMappings": [
+    {
+      "clientScope": "routes:read",
+      "roles": [
+        "ADMIN",
+        "COORDINADOR",
+        "AUDITOR",
+        "EQUIPO_SALUD"
+      ]
+    },
+    {
+      "clientScope": "routes:write",
+      "roles": [
+        "COORDINADOR"
+      ]
+    },
+    {
+      "clientScope": "routes:review",
+      "roles": [
+        "EQUIPO_SALUD"
+      ]
+    },
+    {
+      "clientScope": "audit:read",
+      "roles": [
+        "AUDITOR"
+      ]
+    },
+    {
+      "clientScope": "users:manage",
+      "roles": [
+        "ADMIN"
+      ]
+    },
+    {
+      "client": "rural-routes-web",
+      "roles": [
+        "ADMIN",
+        "COORDINADOR",
+        "AUDITOR",
+        "EQUIPO_SALUD"
+      ]
+    }
+  ],
   "clients": [
     {
       "clientId": "planificador-app",
       "name": "Planificador de rutas",
-      "description": "Cliente de demostración con Client Credentials",
+      "description": "Integración de servidor con Client Credentials (demostración)",
       "enabled": true,
       "protocol": "openid-connect",
       "publicClient": false,
       "bearerOnly": false,
       "clientAuthenticatorType": "client-secret",
-      "secret": "planificador-demo-secret",
+      "secret": "${PLANIFICADOR_CLIENT_SECRET:planificador-demo-secret}",
       "standardFlowEnabled": false,
       "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": false,
@@ -55,7 +255,7 @@
       "fullScopeAllowed": false,
       "frontchannelLogout": false,
       "webOrigins": [
-        "http://localhost:3000"
+        "${API_PUBLIC_URL:http://localhost:3000}"
       ],
       "redirectUris": [],
       "attributes": {
@@ -63,33 +263,12 @@
         "client_credentials.use_refresh_token": "false"
       },
       "defaultClientScopes": [
+        "rural-api",
         "routes:read",
         "routes:write"
       ],
       "optionalClientScopes": [],
       "protocolMappers": [
-        {
-          "name": "audience-rural-routes-api",
-          "protocol": "openid-connect",
-          "protocolMapper": "oidc-audience-mapper",
-          "consentRequired": false,
-          "config": {
-            "included.custom.audience": "rural-routes-api",
-            "access.token.claim": "true",
-            "id.token.claim": "false",
-            "introspection.token.claim": "true"
-          }
-        },
-        {
-          "name": "subject",
-          "protocol": "openid-connect",
-          "protocolMapper": "oidc-sub-mapper",
-          "consentRequired": false,
-          "config": {
-            "access.token.claim": "true",
-            "introspection.token.claim": "true"
-          }
-        },
         {
           "name": "client-id",
           "protocol": "openid-connect",
@@ -109,13 +288,13 @@
     {
       "clientId": "auditor-app",
       "name": "Auditor de rutas",
-      "description": "Cliente de demostración con Client Credentials",
+      "description": "Integración de servidor con Client Credentials (demostración)",
       "enabled": true,
       "protocol": "openid-connect",
       "publicClient": false,
       "bearerOnly": false,
       "clientAuthenticatorType": "client-secret",
-      "secret": "auditor-demo-secret",
+      "secret": "${AUDITOR_CLIENT_SECRET:auditor-demo-secret}",
       "standardFlowEnabled": false,
       "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": false,
@@ -123,7 +302,7 @@
       "fullScopeAllowed": false,
       "frontchannelLogout": false,
       "webOrigins": [
-        "http://localhost:3000"
+        "${API_PUBLIC_URL:http://localhost:3000}"
       ],
       "redirectUris": [],
       "attributes": {
@@ -131,33 +310,12 @@
         "client_credentials.use_refresh_token": "false"
       },
       "defaultClientScopes": [
+        "rural-api",
         "routes:read",
         "audit:read"
       ],
       "optionalClientScopes": [],
       "protocolMappers": [
-        {
-          "name": "audience-rural-routes-api",
-          "protocol": "openid-connect",
-          "protocolMapper": "oidc-audience-mapper",
-          "consentRequired": false,
-          "config": {
-            "included.custom.audience": "rural-routes-api",
-            "access.token.claim": "true",
-            "id.token.claim": "false",
-            "introspection.token.claim": "true"
-          }
-        },
-        {
-          "name": "subject",
-          "protocol": "openid-connect",
-          "protocolMapper": "oidc-sub-mapper",
-          "consentRequired": false,
-          "config": {
-            "access.token.claim": "true",
-            "introspection.token.claim": "true"
-          }
-        },
         {
           "name": "client-id",
           "protocol": "openid-connect",
@@ -173,18 +331,213 @@
           }
         }
       ]
+    },
+    {
+      "clientId": "rural-routes-web",
+      "name": "Aplicación web de rutas rurales",
+      "description": "Cliente público para usuarios: Authorization Code con PKCE y, para la demostración, inicio de sesión directo",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "bearerOnly": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "fullScopeAllowed": false,
+      "frontchannelLogout": true,
+      "rootUrl": "${API_PUBLIC_URL:http://localhost:3000}",
+      "redirectUris": [
+        "${API_PUBLIC_URL:http://localhost:3000}/docs/oauth2-redirect.html",
+        "${FRONTEND_URL:http://localhost:5173}/*"
+      ],
+      "webOrigins": [
+        "${API_PUBLIC_URL:http://localhost:3000}",
+        "${FRONTEND_URL:http://localhost:5173}"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "${FRONTEND_URL:http://localhost:5173}/*##${API_PUBLIC_URL:http://localhost:3000}/*"
+      },
+      "defaultClientScopes": [
+        "rural-api",
+        "routes:read",
+        "routes:write",
+        "routes:review",
+        "audit:read",
+        "users:manage"
+      ],
+      "optionalClientScopes": []
+    },
+    {
+      "clientId": "rural-routes-admin-api",
+      "name": "Gestión de usuarios de la API",
+      "description": "Cuenta de servicio que usa la API para administrar usuarios y roles mediante la Admin API",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "bearerOnly": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "${KEYCLOAK_ADMIN_CLIENT_SECRET:admin-api-demo-secret}",
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "fullScopeAllowed": true,
+      "frontchannelLogout": false,
+      "redirectUris": [],
+      "webOrigins": [],
+      "attributes": {
+        "access.token.lifespan": "300",
+        "client_credentials.use_refresh_token": "false"
+      },
+      "defaultClientScopes": [],
+      "optionalClientScopes": []
     }
   ],
   "users": [
     {
+      "username": "kiddany07",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "danielmoralesteatino2004@gmail.com",
+      "firstName": "Daniel",
+      "lastName": "Morales",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${INITIAL_ADMIN_PASSWORD:DanyCTM777}",
+          "temporary": false
+        }
+      ],
+      "requiredActions": [],
+      "realmRoles": [
+        "ADMIN"
+      ]
+    },
+    {
+      "username": "admin.demo",
+      "enabled": "${DEMO_USERS_ENABLED:true}",
+      "emailVerified": true,
+      "email": "admin.demo@rural-health.test",
+      "firstName": "Administradora",
+      "lastName": "Demo",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Gestion.Usuarios2026",
+          "temporary": false
+        }
+      ],
+      "requiredActions": [],
+      "realmRoles": [
+        "ADMIN"
+      ]
+    },
+    {
+      "username": "coordinador.demo",
+      "enabled": "${DEMO_USERS_ENABLED:true}",
+      "emailVerified": true,
+      "email": "coordinador.demo@rural-health.test",
+      "firstName": "Coordinadora",
+      "lastName": "Demo",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Planifica.Rutas2026",
+          "temporary": false
+        }
+      ],
+      "requiredActions": [],
+      "realmRoles": [
+        "COORDINADOR"
+      ]
+    },
+    {
+      "username": "coordinador2.demo",
+      "enabled": "${DEMO_USERS_ENABLED:true}",
+      "emailVerified": true,
+      "email": "coordinador2.demo@rural-health.test",
+      "firstName": "Coordinador",
+      "lastName": "Suplente",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Planifica.Jornada2026",
+          "temporary": false
+        }
+      ],
+      "requiredActions": [],
+      "realmRoles": [
+        "COORDINADOR"
+      ]
+    },
+    {
+      "username": "auditor.demo",
+      "enabled": "${DEMO_USERS_ENABLED:true}",
+      "emailVerified": true,
+      "email": "auditor.demo@rural-health.test",
+      "firstName": "Auditor",
+      "lastName": "Demo",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Revisa.Trazas2026",
+          "temporary": false
+        }
+      ],
+      "requiredActions": [],
+      "realmRoles": [
+        "AUDITOR"
+      ]
+    },
+    {
+      "username": "equipo.demo",
+      "enabled": "${DEMO_USERS_ENABLED:true}",
+      "emailVerified": true,
+      "email": "equipo.demo@rural-health.test",
+      "firstName": "Equipo",
+      "lastName": "Campo Demo",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Valida.Campo2026",
+          "temporary": false
+        }
+      ],
+      "requiredActions": [],
+      "realmRoles": [
+        "EQUIPO_SALUD"
+      ]
+    },
+    {
       "username": "service-account-planificador-app",
       "enabled": true,
-      "serviceAccountClientId": "planificador-app"
+      "serviceAccountClientId": "planificador-app",
+      "realmRoles": [
+        "COORDINADOR"
+      ]
     },
     {
       "username": "service-account-auditor-app",
       "enabled": true,
-      "serviceAccountClientId": "auditor-app"
+      "serviceAccountClientId": "auditor-app",
+      "realmRoles": [
+        "AUDITOR"
+      ]
+    },
+    {
+      "username": "service-account-rural-routes-admin-api",
+      "enabled": true,
+      "serviceAccountClientId": "rural-routes-admin-api",
+      "clientRoles": {
+        "realm-management": [
+          "view-users",
+          "query-users",
+          "manage-users",
+          "view-realm"
+        ]
+      }
     }
   ]
 }

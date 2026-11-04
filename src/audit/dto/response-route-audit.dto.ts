@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+import { AppRole } from '../../auth/authenticated-user'
 import { PageMetaDto } from '../../common/dto/pagination.dto'
 import { AuditStatus } from '../entities/route-audit-log.entity'
 
@@ -14,6 +15,16 @@ export class AuditActorDto {
 
   @ApiProperty({ nullable: true, type: String, example: 'planificador-app' })
   clientId!: string | null
+
+  @ApiProperty({ nullable: true, type: String, example: 'coordinador.demo' })
+  username!: string | null
+
+  @ApiProperty({
+    enum: AppRole,
+    isArray: true,
+    description: 'Roles funcionales del actor al momento del intento',
+  })
+  roles!: string[]
 }
 
 export class RouteAuditSummaryDto {

@@ -21,7 +21,8 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger'
-import { ApiScope } from '../auth/authenticated-user'
+import { ApiScope, AppRole } from '../auth/authenticated-user'
+import { Roles } from '../auth/decorators/roles.decorator'
 import { Scopes } from '../auth/decorators/scopes.decorator'
 import { AuditService } from './audit.service'
 import { FilterRouteAuditDto } from './dto/filter-route-audit.dto'
@@ -41,8 +42,11 @@ const AUDIT_ID_PARAM = {
 @ApiBearerAuth('bearer')
 @ApiOAuth2([ApiScope.AUDIT_READ], 'oauth2')
 @ApiUnauthorizedResponse({ description: 'Token ausente o inválido' })
-@ApiForbiddenResponse({ description: 'El token no tiene el scope audit:read' })
+@ApiForbiddenResponse({
+  description: 'Requiere el rol AUDITOR y el scope audit:read',
+})
 @Scopes(ApiScope.AUDIT_READ)
+@Roles(AppRole.AUDITOR)
 @Controller('audit/routes')
 export class AuditController {
   constructor(private readonly auditService: AuditService) {}
